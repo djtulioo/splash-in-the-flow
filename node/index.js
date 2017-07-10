@@ -13,6 +13,13 @@ var dbUsersTopic = new db('users-topic-'+sufixRedis, 10);
 const _EVENTSOURCE_PORT_ = 9090;
 const _WEBSOCKET_PORT_ = 8000;
 const _APIREST_PORT_ = 8080;
+const _APP_PORT_ = 9000;
+
+var connect = require('connect');
+var serveStatic = require('serve-static');
+connect().use(serveStatic('../public')).listen(_APP_PORT_, function(){
+  console.log('APP listening at http://[::]:%s', _APP_PORT_);
+});
 
 var client = redis.createClient();
 var server = restify.createServer();
