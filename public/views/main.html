@@ -1,0 +1,131 @@
+<!--<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="text-center m-t-lg">
+                <h1>
+                    {{main.helloText}}
+                </h1>
+                <small>
+                    {{main.descriptionText}}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>-->
+
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="wrapper wrapper-content animated fadeInRight">
+
+                <div class="ibox-content m-b-sm border-bottom">
+                    <div class="p-xs">
+                        <div class="pull-left m-r-md">
+                            <i class="fa fa-send text-navy mid-icon"></i>
+                        </div>
+                        <h2>Bem-vindo ao bate papo KievClass</h2>
+                        <span>Aprenda sistema distribuídos com pessoas distribuídas. (ba-dum-tis)</span>
+                    </div>
+                </div>
+
+                            
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" style="margin-bottom: 10px;">
+                Novo assunto
+                </button>
+
+                <div class="ibox-content forum-container">
+
+                    
+
+                    <div class="forum-title">
+                        <div class="pull-right forum-desc">
+                            <samll>Total de listas: {{ lists.length}}</samll>
+                        </div>
+                        <h3>Assuntos de seu Interesse</h3>
+                    </div>
+
+                    <div class="forum-item active" ng-if="!lists.length">
+                        <div class="row">
+                            <div class="col-md-12">
+                                Nenhum assunto
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="forum-item active" ng-repeat="list in lists">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <!--<div class="forum-icon">
+                                    <i class="fa fa-comments"></i>
+                                </div>-->
+                                <a style="line-height: 38px;" href="#/index/chat/{{ list.id }}" class="forum-item-title">{{ list.topic }} <small>({{list.category.name}})</small> </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="forum-title">
+                        <div class="pull-right forum-desc">
+                            <samll>Total de listas: {{ lists_other.length}}</samll>
+                        </div>
+                        <h3>Outros</h3>
+                    </div>
+
+                    <div class="forum-item active" ng-if="!lists_other.length">
+                        <div class="row">
+                            <div class="col-md-12">
+                                Nenhum assunto
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="forum-item active" ng-repeat="list in lists_other">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <!--<div class="forum-icon">
+                                    <i class="fa fa-comments"></i>
+                                </div>-->
+                                <a style="line-height: 38px;" href="#/index/chat/{{ list.id }}" class="forum-item-title">{{ list.topic }} <small>({{list.category.name}})</small> </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal inmodal" id="myModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+    <div class="modal-content animated bounceInRight">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <i class="fa fa-users modal-icon"></i>
+                <h4 class="modal-title">Crie um novo assunto</h4>
+                <small class="font-bold">Crie um novo assunto para discutir com outras pessoas que tem o mesmo interesse</small>
+            </div>
+            <div class="modal-body">
+
+                <div class="form-group">
+                    <label>Assunto</label> <input type="text" placeholder="Escreva o assunto" class="form-control" ng-model="form_topic">
+                   
+                    <select data-placeholder="Escolha o topico" class="chosen-select"  tabindex="2" style="display: block;
+    width: 100%; margin-top: 10px;" ng-model="form_category">
+                        <option value="">Selecione um topico</option>
+                        <option ng-repeat="category in categories" value="{{ category.id }}">{{category.name}}</option>
+                    </select>
+
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="add()">Criar Assunto</button>
+            </div>
+        </div>
+    </div>
+</div>

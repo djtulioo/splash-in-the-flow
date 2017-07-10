@@ -1,0 +1,23 @@
+<div class="middle-box text-center loginscreen  animated fadeInDown">
+    <div>
+        <div>
+            <h1 class="logo-name">CIN</h1>
+        </div>
+        <h3>KievClass</h3>
+        <p>Aprenda sistema distribuídos com pessoas distribuídas. (ba-dum-tis)</p>
+        <form class="m-t" role="form" ng-submit="login()">
+            <div class="form-group text-left">
+                <input type="text" class="form-control" placeholder="Digite seu nome usuário" required="" ng-model="username" style="margin-bottom:10px;">
+
+                
+                <select multiple chosen data-placeholder="Selecione tópicos de interesse" class="chosen-select"  tabindex="2" style="display: block;
+width: 100%;" ng-model="category">
+                    <option ng-repeat="category in categories" value="{{ category.id }}">{{category.name}}</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary block full-width m-b">Entrar</button>
+        </form>
+        <p class="m-t"> <small><strong>Copyright</strong> KievClass &copy; 2017</small> </p>
+    </div>
+</div>

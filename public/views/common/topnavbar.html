@@ -1,0 +1,27 @@
+<div class="row border-bottom">
+    <nav class="navbar navbar-static-top white-bg" role="navigation" style="margin-bottom: 0">
+        <ul class="nav navbar-top-links navbar-left" style="padding-left: 25px">
+            <li style="margin-right: 10px;">
+                <a href="/#/index/main">
+                    <i class="fa fa-home"></i> Home
+                </a>
+            </li>
+            <li style="margin-right: 10px;">
+                <span class="m-r-sm text-muted welcome-message">{{ main.userName }}</span>
+            </li>
+            <li style="cursor:pointer" ng-if="inited" ng-click="setOff()">
+                <span class="m-r-sm text-info"><i class="fa fa-power-off" aria-hidden="true"></i></span>
+            </li>
+            <li style="cursor:pointer" ng-if="!inited" ng-click="setOn()">
+                <span class="m-r-sm text-danger"><i class="fa fa-power-off" aria-hidden="true"></i></span>
+            </li>
+        </ul>
+        <ul class="nav navbar-top-links navbar-right">
+            <li>
+                <a href="/#/login">
+                    <i class="fa fa-sign-out"></i> Sair
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
