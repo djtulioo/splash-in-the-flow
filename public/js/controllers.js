@@ -110,7 +110,9 @@ function ListsCtrl($scope, $rootScope, $state, $http, $timeout, appSession, UrlS
 
         $scope.form_category = $scope.form_topic = null;
 
-        $http.post(UrlService.apiRest('/topics', obj)).then(function(response) {
+        console.log(obj, )
+
+        $http.post(UrlService.apiRest('/topics'), obj).then(function(response) {
             list();
         }, function(err) {
             console.log(err);
