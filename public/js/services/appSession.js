@@ -3,9 +3,9 @@
 
     angular.module('appServices').factory('appSession', appSession);
 
-    appSession.$inject = ['$rootScope', '$location', 'toaster', 'socketIO', 'appSocket'];
+    appSession.$inject = ['$rootScope', '$location', 'toaster', 'socketIO', 'appSocket', 'UrlService'];
 
-    function appSession($rootScope, $location, toaster, socketIO, appSocket) {
+    function appSession($rootScope, $location, toaster, socketIO, appSocket, UrlService) {
         var statusOn,
         source,
         services = {
@@ -27,7 +27,7 @@
             socketIO.init();
             appSocket.initListeners();
 
-            source = new EventSource('http://localhost:9090');
+            source = new EventSource(UrlService.eventSource());
             source.onmessage = function(event) {
                 if(!event.data) return;
                 var topic = JSON.parse(event.data);

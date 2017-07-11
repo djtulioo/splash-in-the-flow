@@ -28,7 +28,7 @@ function MainCtrl($rootScope, $state, appSession) {
 /**
  * ListsCtrl - controller
  */
-function ListsCtrl($scope, $rootScope, $state, $http, $timeout, appSession) { 
+function ListsCtrl($scope, $rootScope, $state, $http, $timeout, appSession, UrlService) { 
     $rootScope.username = $rootScope.username || localStorage.getItem("username");
     $rootScope.category = $rootScope.category || localStorage.getItem("category");
 
@@ -43,7 +43,7 @@ function ListsCtrl($scope, $rootScope, $state, $http, $timeout, appSession) {
     $scope.$parent.$parent.main.userName = $rootScope.username;
     $scope.$parent.$parent.main.category = $rootScope.category;
     
-    $http.get('http://localhost:8080/categories').then(function(response) {
+    $http.get(UrlService.apiRest('/categories')).then(function(response) {
         $scope.categories = response.data;
     }, function(err) {
         console.log(err);
@@ -67,7 +67,7 @@ function ListsCtrl($scope, $rootScope, $state, $http, $timeout, appSession) {
 
 
     function list(){
-        $http.get('http://localhost:8080/topics?filter=' + $rootScope.category).then(function(response) {
+        $http.get(UrlService.apiRest('/topics?filter=' + $rootScope.category)).then(function(response) {
             if(response.data){
                 var lists = [];
                 response.data.forEach(function(item){
@@ -83,7 +83,7 @@ function ListsCtrl($scope, $rootScope, $state, $http, $timeout, appSession) {
             console.log(err);
         });
 
-        $http.get('http://localhost:8080/topics?only='+ $rootScope.category).then(function(response) {
+        $http.get(UrlService.apiRest('/topics?only='+ $rootScope.category)).then(function(response) {
             if(response.data){
                 var lists = [];
                 response.data.forEach(function(item){
@@ -110,7 +110,7 @@ function ListsCtrl($scope, $rootScope, $state, $http, $timeout, appSession) {
 
         $scope.form_category = $scope.form_topic = null;
 
-        $http.post('http://localhost:8080/topics', obj).then(function(response) {
+        $http.post(UrlService.apiRest('/topics', obj)).then(function(response) {
             list();
         }, function(err) {
             console.log(err);
@@ -124,7 +124,7 @@ function ListsCtrl($scope, $rootScope, $state, $http, $timeout, appSession) {
 /**
  * ChatCtrl - controller
  */
-function ChatCtrl($scope, $rootScope, $state, $window, $timeout, $http, $stateParams, appSession, toaster) {
+function ChatCtrl($scope, $rootScope, $state, $window, $timeout, $http, $stateParams, appSession, toaster, UrlService) {
     $rootScope.username = $rootScope.username || localStorage.getItem("username");
     $rootScope.category = $rootScope.category || localStorage.getItem("category");
 
@@ -185,7 +185,7 @@ function ChatCtrl($scope, $rootScope, $state, $window, $timeout, $http, $statePa
     }
 
     function setTopic(cb){
-        $http.get('http://localhost:8080/topics/' + $stateParams.id).then(function(response) {
+        $http.get(UrlService.apiRest('/topics/' + $stateParams.id)).then(function(response) {
             if(response.data.status == 'success'){
                 $scope.topic = response.data.topic.data.topic;
                 $scope.category = response.data.topic.data.category.name;
@@ -203,7 +203,7 @@ function ChatCtrl($scope, $rootScope, $state, $window, $timeout, $http, $statePa
     }
 
     function listOnline(){
-        $http.get('http://localhost:8080/topics/online/' + $stateParams.id).then(function(response) {
+        $http.get(UrlService.apiRest('/topics/online/' + $stateParams.id)).then(function(response) {
             if(response.data.status != 'success')
                 return;
             $scope.users = response.data.users;
@@ -278,6 +278,7 @@ function ChatCtrl($scope, $rootScope, $state, $window, $timeout, $http, $statePa
     }
 
     function _onMessage(data){
+        console.log(data);
         if(!data || !data.type)
             return;
         
@@ -353,7 +354,7 @@ function ChatCtrl($scope, $rootScope, $state, $window, $timeout, $http, $statePa
 /**
  * LoginCtrl - controller
  */
-function LoginCtrl($scope, $state, $rootScope, $http, appSession) {
+function LoginCtrl($scope, $state, $rootScope, $http, appSession, UrlService) {
     appSession.close();
 
     localStorage.removeItem("username");
@@ -372,7 +373,7 @@ function LoginCtrl($scope, $state, $rootScope, $http, appSession) {
     }
 
     
-    $http.get('http://localhost:8080/categories').then(function(response) {
+    $http.get(UrlService.apiRest('/categories')).then(function(response) {
         $scope.categories = response.data;
     }, function(err) {
         console.log(err);

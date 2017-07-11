@@ -5,15 +5,23 @@ var redis = require('redis');
 const uuidV4 = require('uuid/v4');
 
 const sufixRedis = 20;
+const isProduction = false;
 
 var dbTopics = new db('topics-'+sufixRedis);
 var dbLogin = new db('login-'+sufixRedis);
 var dbUsersTopic = new db('users-topic-'+sufixRedis, 10);
 
-const _EVENTSOURCE_PORT_ = 9090;
-const _WEBSOCKET_PORT_ = 8000;
-const _APIREST_PORT_ = 8080;
-const _APP_PORT_ = 9000;
+if(isProduction){
+    var _EVENTSOURCE_PORT_ = 9090;
+    var _WEBSOCKET_PORT_ = 8000;
+    var _APIREST_PORT_ = 8080;
+    var _APP_PORT_ = 80;
+}else{
+    var _EVENTSOURCE_PORT_ = 9090;
+    var _WEBSOCKET_PORT_ = 8000;
+    var _APIREST_PORT_ = 8080;
+    var _APP_PORT_ = 9000;
+}
 
 const _RABBIT_IP_ = '45.55.84.202';
 //const _RABBIT_IP_ = '127.0.0.1';

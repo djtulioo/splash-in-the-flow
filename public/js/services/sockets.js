@@ -3,9 +3,9 @@
 
     angular.module('appServices').factory('socketIO', socketIO);
 
-    socketIO.$inject = ['$rootScope', '$window'];
+    socketIO.$inject = ['$rootScope', '$window', 'UrlService'];
 
-    function socketIO($rootScope, $window) {
+    function socketIO($rootScope, $window, UrlService) {
         var socket,
         services = {
             init: _init,
@@ -19,7 +19,7 @@
 
         function _init() {
             console.log('INIT LETS GO');
-            $window.socket = io.connect('http://localhost:8000', {
+            $window.socket = io.connect(UrlService.socket(), {
                 query: {
                     username: $rootScope.username
                 },
