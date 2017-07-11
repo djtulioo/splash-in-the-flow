@@ -13,7 +13,7 @@
 		};
 
 		var production = {
-			apiRest: 'http://45.55.84.202:80',
+			apiRest: 'http://45.55.84.202:8080',
 			eventSource: 'http://45.55.84.202:9090',
 			socket: 'http://45.55.84.202:8000',
 		};
