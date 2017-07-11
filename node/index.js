@@ -15,13 +15,21 @@ const _WEBSOCKET_PORT_ = 8000;
 const _APIREST_PORT_ = 8080;
 const _APP_PORT_ = 9000;
 
+const _RABBIT_IP_ = '45.55.84.202';
+//const _RABBIT_IP_ = '127.0.0.1';
+const _RABBIT_PORT_ = '5672';
+
+const _REDIS_IP_ = '45.55.84.202';
+//const _REDIS_IP_ = '127.0.0.1';
+const _REDIS_PORT_ = '6379';
+
 var connect = require('connect');
 var serveStatic = require('serve-static');
 connect().use(serveStatic('../public')).listen(_APP_PORT_, function(){
   console.log('APP listening at http://[::]:%s', _APP_PORT_);
 });
 
-var client = redis.createClient();
+var client = redis.createClient(_REDIS_PORT_, _REDIS_IP_);
 var server = restify.createServer();
 
 server.use(restify.gzipResponse());
@@ -366,8 +374,19 @@ function db(key, expire){
 
 function exchangeChat(chatId, _receive, _close, _error){
 
-    var connection = amqp.createConnection({ host: 'localhost' });
+    var connection = amqp.createConnection({
+        host: _RABBIT_IP_,
+        port: _RABBIT_PORT_,
+        login: 'rabbit',
+        password: 'qwe123',
+        reconnect: false
+    });
     var chatExchange;
+    var queue;
+    var inited = false;
+    var ctag;
+
+    //console.log(connection);
 
     connection.on('error', _error);
     connection.on('close', _close);
@@ -380,17 +399,35 @@ function exchangeChat(chatId, _receive, _close, _error){
     }
 
     this.close = function(){
+        console.log('SET CLOSE EXCHAT');
         chatExchange = null;
+        //connection.end();
+        if(queue){
+            queue.unbind(chatId, "");
+            queue.unsubscribe(ctag);
+            queue.destroy();
+            queue = false;
+        }
         connection.disconnect();
+        connection = false;
     }
 
     connection.on('ready', function () {
         console.log('exChat: ready');
-        chatExchange = connection.exchange(chatId, {'type': 'fanout'});
-        connection.queue('', {exclusive: true}, function (q) {
-            q.bind(chatId, "");
-            q.subscribe(_receive);
-        });
+        if(!inited && connection){
+            inited = true;
+
+            chatExchange = connection.exchange(chatId, {'type': 'fanout'});
+
+            console.log('exChat: bind subscribe');
+            connection.queue('', {exclusive: true}, function (q) {
+                queue = q;
+                queue.bind(chatId, "");
+                queue.subscribe(_receive).addCallback(
+                    function(ok) { ctag = ok.consumerTag; 
+                });
+            });
+        }
     });
 
     //on close
@@ -400,8 +437,7 @@ function exchangeChat(chatId, _receive, _close, _error){
 var serverWs = require('http').createServer();
 var io = require('socket.io')(serverWs);
 io.on('connection', function(client){
-    var chatOn = false;
-    var lastChatOn = false;
+    var chatId = false;
     var username = client.handshake.query.username;
     var chat;
     var user;
@@ -411,28 +447,43 @@ io.on('connection', function(client){
 
     client.on('setChat', function(data){
         console.log('[' + username + '] set chat: ', data);
-        lastChatOn = chatOn;
-        if(chatOn == data)
-            return;
-
-        chatOn = data;
-
-        if(chat && !chatOn){
-            chat.send({
-                action: 'remove',
-                type: 'users',
-                data: user
-            });
-            chat.close();
-            clearInterval(interval);
-            if(user){
-                dbUsersTopic.del(lastChatOn+':'+user.id, function(){});
-                user = false;
-            }
+        if(chatId == data){
+            console.log('[' + username + '] Chat already seted: ', data);
             return;
         }
 
-        chat = new exchangeChat(chatOn, function(data){
+        if(!data){
+            if(chat){
+                chat.send({
+                    action: 'remove',
+                    type: 'users',
+                    data: user
+                });
+                chat.close();
+                chat = false;
+            }
+            if(interval){
+                clearInterval(interval);
+                interval = false;
+            }
+            if(user){
+                dbUsersTopic.del(chatId+':'+user.id, function(){});
+                user = false;
+            }
+
+            chatId = false;
+            return;
+        }
+
+        chatId = data;
+
+        if(chat){
+            console.log('CHAT EXISTS: '+chatId);
+        }
+
+        console.log('new exchange Chat');
+        chat = new exchangeChat(chatId, function(data){
+            console.log('EMIT _onMessage');
             client.emit('_onMessage', data);
         }, function(){
             console.log('[' + username + '] exchange close');
@@ -450,7 +501,7 @@ io.on('connection', function(client){
 
         var i = 0;
 
-        dbUsersTopic.addWhere(chatOn, {
+        dbUsersTopic.addWhere(chatId, {
             username: username, 
             lastSeenAt: (new Date()).getTime(),
             cycle: i++
@@ -462,8 +513,7 @@ io.on('connection', function(client){
             if(user){
                 user.data.lastSeenAt = (new Date()).getTime();
                 user.data.cycle = i++;
-                dbUsersTopic.update(chatOn+':'+user.id, user, function(){
-                });
+                dbUsersTopic.update(chatId+':'+user.id, user, function(){});
             }
         }, 5*1000); // 10s
 
@@ -489,7 +539,7 @@ io.on('connection', function(client){
         console.log('[' + username + '] disconnect');
         if(chat){
             if(user){
-                dbUsersTopic.del(chatOn+':'+user.id, function(){
+                dbUsersTopic.del(chatId+':'+user.id, function(){
                 });
                 chat.send({
                     action: 'remove',
