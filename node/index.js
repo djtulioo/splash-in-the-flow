@@ -90,7 +90,9 @@ setInterval(function(){
 var newTopicsExchange = false;
 
 function initTopicsExchange(){
-    newTopicsExchange = new exchangeChat('newTopics', function(data){
+    newTopicsExchange = new exchangeChat('newTopics', function(){
+        console.log('[Exchange newTopics] connected');
+    }, function(data){
         data = ''+data.data;
         console.log('[Exchange newTopics] new: '+ data);
         for (var uuid in clientsSE) {
@@ -103,6 +105,7 @@ function initTopicsExchange(){
             if(!clientsSE.hasOwnProperty(uuid)) continue;
             clientsSE[uuid].end();
         }
+        newTopicsExchange.destroyQueue();
         newTopicsExchange = false;
         setTimeout(function(){
             initTopicsExchange();
@@ -113,6 +116,7 @@ function initTopicsExchange(){
             if(!clientsSE.hasOwnProperty(uuid)) continue;
             clientsSE[uuid].end();
         }
+        newTopicsExchange.close();
         newTopicsExchange = false;
         setTimeout(function(){
             initTopicsExchange();
@@ -380,7 +384,7 @@ function db(key, expire){
 
 
 
-function exchangeChat(chatId, _receive, _close, _error){
+function exchangeChat(chatId, _connected, _receive, _close, _error){
 
     var connection = amqp.createConnection({
         host: _RABBIT_IP_,
@@ -410,20 +414,27 @@ function exchangeChat(chatId, _receive, _close, _error){
         console.log('SET CLOSE EXCHAT');
         chatExchange = null;
         //connection.end();
+        destroyQueue();
+        connection.disconnect();
+        connection = false;
+    }
+
+    this.destroyQueue = destroyQueue;
+
+    function destroyQueue(){
         if(queue){
             queue.unbind(chatId, "");
             queue.unsubscribe(ctag);
             queue.destroy();
             queue = false;
-        }
-        connection.disconnect();
-        connection = false;
+        }     
     }
 
     connection.on('ready', function () {
         console.log('exChat: ready');
         if(!inited && connection){
             inited = true;
+            _connected();
 
             chatExchange = connection.exchange(chatId, {'type': 'fanout'});
 
@@ -490,7 +501,17 @@ io.on('connection', function(client){
         }
 
         console.log('new exchange Chat');
-        chat = new exchangeChat(chatId, function(data){
+        chat = new exchangeChat(chatId, function(){
+            console.log('[' + username + '] exchange connected');
+            setTimeout(function(){
+                console.log('SEND NEW USER');
+                chat.send({
+                    action: 'add',
+                    type: 'users',
+                    data: user
+                });
+            }, 1500);
+        },function(data){
             console.log('EMIT _onMessage');
             client.emit('_onMessage', data);
         }, function(){
@@ -498,14 +519,6 @@ io.on('connection', function(client){
         }, function(error){
             console.log('[' + username + '] exchange error: ' + error);
         });
-
-        setTimeout(function(){
-            chat.send({
-                action: 'add',
-                type: 'users',
-                data: user
-            });
-        }, 1000);
 
         var i = 0;
 
